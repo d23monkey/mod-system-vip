@@ -3,6 +3,7 @@
  */
 
 #include "SystemVip.h"
+#include "WorldSessionMgr.h"
 
 #define sV sSystemVip
 
@@ -10,17 +11,28 @@
 class SystemVipPlayer : public PlayerScript
 {
 public:
-    SystemVipPlayer() : PlayerScript("SystemVipPlayer") { }
+    SystemVipPlayer() : PlayerScript("SystemVipPlayer", {
+        PLAYERHOOK_ON_LOGIN,
+        PLAYERHOOK_ON_LOGOUT,
+        PLAYERHOOK_ON_GIVE_EXP,
+        PLAYERHOOK_ON_BEFORE_LOOT_MONEY,
+        PLAYERHOOK_ON_PLAYER_RELEASED_GHOST,
+        PLAYERHOOK_ON_VICTIM_REWARD_AFTER
+    }) { }
 
-    void OnLogin(Player* player) override
+    void OnPlayerLogin(Player* player) override
     {
         if (sConfigMgr->GetOption<bool>("SystemVip.Announce", false))
         {
-            ChatHandler(player->GetSession()).SendSysMessage("本服务器正在运行 |cff4CFF00VIP系统 |r模块.");
+			uint32 loc = player->GetSession()->GetSessionDbLocaleIndex();
+            if (loc == 4)
+                ChatHandler(player->GetSession()).SendSysMessage("|cff00ff00本服务端已加载|r |cff00ccffVIP系统 |r|cff00ff00模块.|r");
+            else
+				ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00SystemVip |rmodule.");
         }
 
         if (sV->isVip(player) && sV->loginAnnounce) {
-            sWorld->SendServerMessage(SERVER_MSG_STRING, sV->getLoginMessage(player));
+            sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, sV->getLoginMessage(player));
         }
 
         if (sV->isVip(player)) {
@@ -32,7 +44,7 @@ public:
             sV->loadTeleportVip(player);
     }
 
-    void OnLogout(Player* player) override {
+    void OnPlayerLogout(Player* player) override {
         if (sV->saveTeleport && sV->isVip(player))
             sV->teleportMap.erase(player->GetSession()->GetAccountId());
     }
@@ -43,13 +55,13 @@ public:
  //       }
  //   }
 
-    void OnGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override {
+    void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override {
         if (sV->isVip(player) && sV->rateCustom) {
             amount *= sV->rateXp;
         }
     }
 
-    void OnBeforeLootMoney(Player* player, Loot* loot) override {
+    void OnPlayerBeforeLootMoney(Player* player, Loot* loot) override {
         if (sV->isVip(player) && sV->rateCustom) {
             loot->gold *= sV->goldRate;
         }
@@ -64,7 +76,7 @@ public:
         }
     }
 
-    void OnVictimRewardAfter(Player* player, Player* /*victim*/, uint32& /*killer_title*/, uint32& /*victim_rank*/, float& honor_f) override {
+    void OnPlayerVictimRewardAfter(Player* player, Player* /*victim*/, uint32& /*killer_title*/, uint32& /*victim_rank*/, float& honor_f) override {
         if (sV->isVip(player) && sV->rateCustom) {
             if (sV->honorRate > 1) {
                 player->ModifyHonorPoints((honor_f * sV->honorRate) - honor_f);
@@ -191,7 +203,7 @@ public:
             return true;
         }
         if(sV->vipZone)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/Achievement_Zone_ZulDrak_12:28:28:0:0|t VIP区域", 0, 1);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/Achievement_Zone_ZulDrak_12:28:28:0:0|t VIP区域", 0, 1, "确定要传送VIP区域吗.", 0, false);
         if(sV->armorRep)
             AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Hammer_20:28:28:0:0|t 修理护甲.", 0, 2);
         if(sV->bankEnable)
@@ -325,6 +337,7 @@ public:
         case 12:
             sV->teleportPlayer(player, sender);
             CloseGossipMenuFor(player);
+			break;
         default:
             CloseGossipMenuFor(player);
             break;
@@ -355,7 +368,9 @@ public:
 
 class SystemVipWorld : WorldScript {
 public:
-    SystemVipWorld() : WorldScript("SystemVipWorld") {}
+    SystemVipWorld() : WorldScript("SystemVipWorld", {
+        WORLDHOOK_ON_AFTER_CONFIG_LOAD
+    }) {}
 
     virtual void OnAfterConfigLoad(bool /*reload*/) {
         sV->LoadConfig();

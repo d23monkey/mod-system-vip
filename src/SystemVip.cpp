@@ -120,15 +120,15 @@ string SystemVip::getInformationAdavantages() {
     text << "福利列表:\n";
     text << "----------------------------------\n";
     if(loginAnnounce)
-        text << "|TInterface/ICONS/Spell_unused2:25:25:-10:-8|t 登录时的公告." << "\n";
+        text << "|TInterface/ICONS/Spell_unused2:25:25:-10:-8|t 登录公告." << "\n";
     if (rateCustom) {
         text << "|TInterface/ICONS/Achievement_BG_KillXEnemies_GeneralsRoom:25:25:-10:-8|t 经验值速率  x " << rateXp << "\n";
-        text << "|TInterface/ICONS/Achievement_BG_overcome500disadvantage:25:25:-10:-8|t 专业速率  x " << professionRate << "\n";
+        text << "|TInterface/ICONS/Achievement_BG_overcome500disadvantage:25:25:-10:-8|t 专业技能速率  x " << professionRate << "\n";
         text << "|TInterface/ICONS/Achievement_BG_ABshutout:25:25:-10:-8|t 获得金币速率  x " << goldRate << "\n";
         text << "|TInterface/ICONS/Achievement_BG_kill_carrier_opposing_flagroom:25:25:-10:-8|t 获得荣誉速率  x " << honorRate << "\n";
     }
     if(ghostMount)
-        text << "|TInterface/ICONS/ability_vanish:25:25:-10:-8|t 作为幽灵时的速度." << "\n";
+        text << "|TInterface/ICONS/ability_vanish:25:25:-10:-8|t 灵魂形态速度加快." << "\n";
     if (petEnable) {
         text << "|TInterface/ICONS/ability_hunter_beastcall:25:25:-10:-8|t VIP宠物." << "\n";
         if(vipZone)
@@ -140,17 +140,17 @@ string SystemVip::getInformationAdavantages() {
         if(mailEnable)
             text << "|TInterface/ICONS/inv_letter_15:25:25:-10:-8|t 个人邮箱." << "\n";
         if(buffsEnable)
-            text << "|TInterface/ICONS/Spell_Magic_GreaterBlessingofKings:25:25:-10:-8|t VIP BUFF." << "\n";
+            text << "|TInterface/ICONS/Spell_Magic_GreaterBlessingofKings:25:25:-10:-8|t VIP增益." << "\n";
         if(refreshEnable)
             text << "|TInterface/ICONS/Spell_Holy_LayOnHands:25:25:-10:-8|t 恢复生命、法力." << "\n";
         if(sicknessEnbale)
-            text << "|TInterface/ICONS/spell_shadow_deathscream:25:25:-10:-8|t 移除减益状态." << "\n";
+            text << "|TInterface/ICONS/spell_shadow_deathscream:25:25:-10:-8|t 移除虚弱状态." << "\n";
         if(deserterEnable)
             text << "|TInterface/ICONS/ability_druid_cower:25:25:-10:-8|t 移除逃兵标记." << "\n";
         if(resetInstance)
             text << "|TInterface/ICONS/Achievement_Dungeon_Icecrown_IcecrownEntrance:25:25:-10:-8|t 重置副本." << "\n";
         if(saveTeleport)
-            text << "|TInterface/ICONS/Spell_Holy_LightsGrace:25:25:-10:-8|t 保存位置." << "\n";
+            text << "|TInterface/ICONS/Spell_Holy_LightsGrace:25:25:-10:-8|t 保存当前位置." << "\n";
     }
     return text.str();
 }
@@ -171,7 +171,7 @@ void SystemVip::sendGossipInformation(Player* player, bool advantages) {
     }
 
     if (advantages) {
-        text << "记住，购买VIP后，您账户中的所有角色都将享有VIP福利." << "\n";
+        text << "请记住，购买VIP后，您账户下的所有角色都将享有VIP福利." << "\n";
         text << getInformationAdavantages();
     }
 
