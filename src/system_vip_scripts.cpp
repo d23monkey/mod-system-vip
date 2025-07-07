@@ -6,7 +6,8 @@
 #include "WorldSessionMgr.h"
 
 #define sV sSystemVip
-
+#define VipWhistle 44830 //哨子
+#define Pet_Vip 100002 //骡子
 // Add player scripts
 class SystemVipPlayer : public PlayerScript
 {
@@ -31,11 +32,13 @@ public:
 				ChatHandler(player->GetSession()).SendSysMessage("This server is running the |cff4CFF00SystemVip |rmodule.");
         }
 
-        if (sV->isVip(player) && sV->loginAnnounce) {
+        if (sV->isVip(player) && sV->loginAnnounce)
+        {
             sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, sV->getLoginMessage(player));
         }
 
-        if (sV->isVip(player)) {
+        if (sV->isVip(player))
+        {
             ChatHandler(player->GetSession()).PSendSysMessage("可用的VIP订阅时间: |cff4CFF00{}|r", sV->getFormatedVipTime(player).c_str());
         }
 
@@ -44,31 +47,31 @@ public:
             sV->loadTeleportVip(player);
     }
 
-    void OnPlayerLogout(Player* player) override {
+    void OnPlayerLogout(Player* player) override
+    {
         if (sV->saveTeleport && sV->isVip(player))
             sV->teleportMap.erase(player->GetSession()->GetAccountId());
     }
 
-	//void OnGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override {
- //       if (sV->isVip(player) && sV->rateCustom) {
- //           amount *= sV->professionRate;
- //       }
- //   }
-
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override {
-        if (sV->isVip(player) && sV->rateCustom) {
+        if (sV->isVip(player) && sV->rateCustom)
+        {
             amount *= sV->rateXp;
         }
     }
 
-    void OnPlayerBeforeLootMoney(Player* player, Loot* loot) override {
-        if (sV->isVip(player) && sV->rateCustom) {
+    void OnPlayerBeforeLootMoney(Player* player, Loot* loot) override
+    {
+        if (sV->isVip(player) && sV->rateCustom)
+        {
             loot->gold *= sV->goldRate;
         }
     }
 
-    void OnPlayerReleasedGhost(Player* player) override {
-        if (sV->isVip(player) && sV->ghostMount) {
+    void OnPlayerReleasedGhost(Player* player) override
+    {
+        if (sV->isVip(player) && sV->ghostMount)
+        {
             // Cast Mount Speed
             if (!player->HasAura(55164))
                 player->AddAura(55164, player);
@@ -76,8 +79,10 @@ public:
         }
     }
 
-    void OnPlayerVictimRewardAfter(Player* player, Player* /*victim*/, uint32& /*killer_title*/, uint32& /*victim_rank*/, float& honor_f) override {
-        if (sV->isVip(player) && sV->rateCustom) {
+    void OnPlayerVictimRewardAfter(Player* player, Player* /*victim*/, uint32& /*killer_title*/, uint32& /*victim_rank*/, float& honor_f) override
+    {
+        if (sV->isVip(player) && sV->rateCustom)
+        {
             if (sV->honorRate > 1) {
                 player->ModifyHonorPoints((honor_f * sV->honorRate) - honor_f);
             }
@@ -85,7 +90,8 @@ public:
     }
 };
 
-class SystemVipVendor : public CreatureScript {
+class SystemVipVendor : public CreatureScript
+{
 public:
     SystemVipVendor() : CreatureScript("SystemVipVendor") {}
 
@@ -98,7 +104,7 @@ public:
         AddGossipItemFor(player, GOSSIP_ICON_TALK, "|TInterface/ICONS/INV_Misc_Book_07:28:28:0:0|t VIP说明书.", 0, 2);
         if(sV->isVip(player))
             AddGossipItemFor(player, GOSSIP_ICON_TALK, "|TInterface/ICONS/ability_hunter_beastcall:28:28:0:0|t 找回我的VIP宠物.", 0, 4);
-        AddGossipItemFor(player, GOSSIP_ICON_TALK, "|TInterface/ICONS/Trade_Engineering:28:28:0:0|t 关闭.", 0, 3);
+        AddGossipItemFor(player, GOSSIP_ICON_TALK, "|TInterface/ICONS/Trade_Engineering:28:28:0:0|t 再见.", 0, 3);
         SendGossipMenuFor(player, 1, creature->GetGUID());
         return true;
     }
@@ -110,11 +116,13 @@ public:
         switch (action)
         {
         case 1:
-            if (player->HasItemCount(sV->TokenEntry, sV->TokenAmount)) {
+            if (player->HasItemCount(sV->TokenEntry, sV->TokenAmount))
+            {
                 player->DestroyItemCount(sV->TokenEntry, sV->TokenAmount, true);
                 sV->addRemainingVipTime(player);
-                if (!player->HasItemCount(44830, 1, true)) {
-                    player->AddItem(44830, 1);
+                if (!player->HasItemCount(VipWhistle, 1, true))
+                {
+                    player->AddItem(VipWhistle, 1);
                 }
                 ChatHandler(player->GetSession()).PSendSysMessage("感谢你的VIP订阅.");
                 ChatHandler(player->GetSession()).PSendSysMessage("可用的VIP订阅时间: {}", sV->getFormatedVipTime(player).c_str());
@@ -131,8 +139,9 @@ public:
             SendGossipMenuFor(player, VENDOR_INFO, creature->GetGUID());
             break;
         case 4:
-            if (!player->HasItemCount(44830, 1, true)) {
-                player->AddItem(44830, 1);
+            if (!player->HasItemCount(VipWhistle, 1, true))
+            {
+                player->AddItem(VipWhistle, 1);
                 creature->Whisper("请不要再弄丢它了.", LANG_UNIVERSAL, player, false);
                 CloseGossipMenuFor(player);
             }
@@ -149,23 +158,28 @@ public:
     }
 };
 
-class SystemVipPocket : ItemScript {
+class SystemVipPocket : ItemScript
+{
 public:
     SystemVipPocket() : ItemScript("SystemVipPocket") {}
 
-    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/) {
-        if (!sV->isVip(player)) {
+    bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/)
+    {
+        if (!sV->isVip(player))
+        {
             ChatHandler(player->GetSession()).PSendSysMessage("你还不是VIP!");
             ChatHandler(player->GetSession()).PSendSysMessage("请更新你的VIP订阅.");
             return false;
         }
 
-        /*if (player->IsInCombat()) {
+        /*if (player->IsInCombat())
+        {
             ChatHandler(player->GetSession()).PSendSysMessage("Estas en combate!");
             return false;
         }*/
 
-        if (player->GetMap()->IsBattleArena()) {
+        if (player->GetMap()->IsBattleArena())
+        {
             ChatHandler(player->GetSession()).PSendSysMessage("你不能在竞技场中使用!");
             return false;
         }
@@ -178,7 +192,7 @@ public:
         float distance = 20;
         float angle = player->GetOrientation() * M_PI / 180.0f;
 
-        Creature* pet = player->SummonCreature(100002, player->GetPositionX() + (distance * cos(angle)), player->GetPositionY() + (distance * sin(angle)), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 90000);//90second
+        Creature* pet = player->SummonCreature(Pet_Vip, player->GetPositionX() + (distance * cos(angle)), player->GetPositionY() + (distance * sin(angle)), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 90000);//90second
         pet->GetMotionMaster()->MoveFollow(player, PET_FOLLOW_DIST + 2.0, PET_FOLLOW_ANGLE);
         pet->SetFaction(player->GetFaction());
         pet->SetLevel(player->GetLevel());
@@ -188,18 +202,22 @@ public:
 
 };
 
-class SystemVipPet : CreatureScript {
+class SystemVipPet : CreatureScript
+{
 public:
     SystemVipPet() : CreatureScript("SystemVipPet") {}
 
-    bool OnGossipHello(Player* player, Creature* creature) {
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
         ClearGossipMenuFor(player);
         sV->sendGossipInformation(player, false);
-        if (creature->GetCreatorGUID() != player->GetGUID()) {
+        if (creature->GetCreatorGUID() != player->GetGUID())
+        {
             return true;
         }
 
-        if (!sV->petEnable) {
+        if (!sV->petEnable)
+        {
             return true;
         }
         if(sV->vipZone)
@@ -210,7 +228,8 @@ public:
             AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Ingot_03:28:28:0:0|t 我的银行.", 0, 3);
         if(sV->mailEnable)
             AddGossipItemFor(player, 0, "|TInterface/ICONS/inv_letter_15:28:28:0:0|t 我的邮箱.", 0, 8);
-        if (sV->buffsEnable) {
+        if (sV->buffsEnable)
+        {
             AddGossipItemFor(player, 0, "|TInterface/ICONS/Spell_Magic_GreaterBlessingofKings:28:28:0:0|t 增益效果", 0, 4);
             AddGossipItemFor(player, 0, "|TInterface/PAPERDOLLINFOFRAME/UI-GearManager-Undo:28:28:0:0|t 移除增益效果", 0, 11);
         }
@@ -229,16 +248,19 @@ public:
         SendGossipMenuFor(player, PET_INFO, creature->GetGUID());
         return true;
     }
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) {
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
+    {
         ClearGossipMenuFor(player);
         switch (action)
         {
         case 1:
-            if (player->IsInCombat()) {
+            if (player->IsInCombat())
+            {
                 ChatHandler(player->GetSession()).PSendSysMessage("你在战斗中!");
                 CloseGossipMenuFor(player);
             }
-            else {
+            else
+            {
                 player->TeleportTo(sV->vipZoneMapId, sV->vipZonePosX, sV->vipZonePosY, sV->vipZonePosZ, sV->vipZoneO);
                 CloseGossipMenuFor(player);
             }
@@ -252,7 +274,8 @@ public:
             player->GetSession()->SendShowBank(creature->GetGUID());
             break;
         case 4:
-            for (size_t i = 0; i < sV->buffIds.size(); i++) {
+            for (size_t i = 0; i < sV->buffIds.size(); i++)
+            {
                 player->AddAura(sV->buffIds[i], player);
             }
             player->CastSpell(player, 16609);
@@ -317,7 +340,8 @@ public:
             return true;
             break;
         case 11:
-            for (size_t i = 0; i < sV->buffIds.size(); i++) {
+            for (size_t i = 0; i < sV->buffIds.size(); i++)
+            {
                 if (player->HasAura(sV->buffIds[i]))
                     player->RemoveAura(sV->buffIds[i]);
             }
@@ -345,7 +369,8 @@ public:
         return true;
     }
 
-    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 /*sender*/, uint32 action, const char* code) {
+    bool OnGossipSelectCode(Player* player, Creature* creature, uint32 /*sender*/, uint32 action, const char* code)
+    {
         switch (action)
         {
         case 1:
@@ -366,17 +391,20 @@ public:
 
 
 
-class SystemVipWorld : WorldScript {
+class SystemVipWorld : WorldScript
+{
 public:
     SystemVipWorld() : WorldScript("SystemVipWorld", {
         WORLDHOOK_ON_AFTER_CONFIG_LOAD
     }) {}
 
-    virtual void OnAfterConfigLoad(bool /*reload*/) {
+    virtual void OnAfterConfigLoad(bool /*reload*/)
+    {
         sV->LoadConfig();
         sV->vipMap.clear();
         QueryResult result = LoginDatabase.Query("SELECT * FROM account_vip;");
-        if (result) {
+        if (result)
+        {
             do
             {
                 sV->vipMap.emplace((*result)[0].Get<uint32>(), (*result)[1].Get<uint32>());
